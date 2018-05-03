@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">VDV</string>
+    
+    <string name="google_auth_id">624089359951-jmnqgadh7e4jg28k677n0618puc5q7tv.apps.googleusercontent.com</string>
+
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="username">PICK USERNAME</string>
+    <string name="login">LOGIN</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_navigation">NavigationActivity</string>
+    <string name="description">Description</string>
+    <string name="bottom_sheet_content">Bottom sheet content</string>
+    <string name="large_text">
+        "
+        "Some component types have responsive elevation, meaning they change elevation in response "
+        "to user input (e.g., normal, focused, and pressed) or system events. These elevation "
+        "changes are consistently implemented using dynamic elevation offsets.\n"
+        "Dynamic elevation offsets are the goal elevation that a component moves towards, relative "
+        "to the component’s resting state. They ensure that elevation changes are consistent "
+        "across actions and component types. For example, all components that lift on press have "
+        "the same elevation change relative to their resting elevation.\n"
+        "Once the input event is completed or cancelled, the component will return to its resting "
+        "elevation.\n\n"
+
+        "Avoiding elevation interference.\n\n"
+
+        "Components with responsive elevations may encounter other components as they move between "
+        "their resting elevations and dynamic elevation offsets. Because material cannot pass "
+        "through other material, components avoid interfering with one another any number of ways, "
+        "whether on a per component basis or using the entire app layout.\n"
+        "On a component level, components can move or be removed before they cause interference. "
+        "For example, a floating action button (FAB) can disappear or move off screen before a "
+        "user picks up a card, or it can move if a snackbar appears.\n"
+        "On the layout level, design your app layout to minimize opportunities for interference. "
+        "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
+        "when a user tries to pick up one of cards.\n\n"
+    </string>
+
+    <string name="feed_view_more_text">See more</string>
+    <string name="feed_view_comment">Comment</string>
+    <string name="feed_view_no_likes">nobody liked this yet</string>
+    <string name="feed_view_has_likes">liked by</string>
+
+    <string name="profile_following">Following</string>
+    <string name="profile_followers">Followers</string>
+    <string name="profile_users_amount">%1$d</string>
+
+
+    <string name="img_desc">Img content</string>
+
+    <string name="google_maps_ARI_key">AIzaSyC-HSNaJdUaSB2eFySrZtvqEvP5tQbM1Ck</string>
+</resources>
