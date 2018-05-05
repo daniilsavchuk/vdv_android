@@ -10,7 +10,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.its.vdv.data.Court;
-import com.its.vdv.rest.wrapper.CourtsRestWrapper;
+import com.its.vdv.rest.wrapper.SearchRestWrapper;
 import com.its.vdv.rest.wrapper.RestListener;
 import com.its.vdv.views.NavigationFooterView;
 
@@ -34,15 +34,16 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback, Goo
     SupportMapFragment mapFragment;
     
     @Bean
-    CourtsRestWrapper courtsRestWrapper;
+    SearchRestWrapper searchRestWrapper;
     
     private List<Court> courts = new ArrayList<>();
     
     @AfterViews
     public void init() {
         navigationFooterView.setPage(NavigationFooterView.Page.MAP);
-        
-        courtsRestWrapper.getAllCourts(new RestListener<List<Court>>() {
+
+        //TODO: FIXIT TO CURRENT USER POSITION
+        searchRestWrapper.searchCourt(59.9588, 30.3039, 0.1, new RestListener<List<Court>>() {
             @Override
             public void onSuccess(List<Court> courts) {
                 MapActivity.this.courts = courts;
