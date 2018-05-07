@@ -7,9 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AddCommentRequest {
-    @NonNull private Long id;
     @NonNull private Long vdvid = 0L;
     @NonNull private String text;
-    @NonNull private String created = "";
-    @NonNull private String updated = "";
 }

@@ -1,11 +1,14 @@
 package com.its.vdv;
 
+import android.graphics.PorterDuff;
+
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -65,7 +68,13 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback, Goo
         googleMap.animateCamera(center);
 
         for (Court court : courts) {
-            MarkerOptions markerOptions = new MarkerOptions()
+            BitmapDescriptor iconic = BitmapDescriptorFactory.fromResource(R.drawable.ic_map_icon);
+            /*iconic.getDrawable().setColorFilter(
+                    getResources().getColor(R.color.vdv),
+                    PorterDuff.Mode.SRC_IN
+            );*/
+
+            MarkerOptions markerOptions = new MarkerOptions().icon(iconic).flat(true)
                     .position(new LatLng(court.getLat(), court.getLon()))
                     .title(court.getName());
             

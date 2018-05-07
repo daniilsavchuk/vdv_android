@@ -116,6 +116,7 @@ public class FeedItemView extends RelativeLayout {
             likesView.setText(getLikes(feedItem));
         }
 
+        commentsListView.removeAllViews();
         for (Comment comment : feedItem.getComments()) {
             CommentItemView v = CommentItemView_.build(getContext());
 

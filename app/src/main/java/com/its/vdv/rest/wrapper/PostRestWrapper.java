@@ -83,7 +83,7 @@ public class PostRestWrapper {
 
             AddCommentRequest request = new AddCommentRequest();
             {
-                request.setId(id);
+                request.setVdvid(id);
                 request.setText(comment);
             }
 
