@@ -29,8 +29,8 @@ android {
         applicationId "com.its.vdv"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 4
-        versionName "0.0.3"
+        versionCode 5
+        versionName "0.0.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
