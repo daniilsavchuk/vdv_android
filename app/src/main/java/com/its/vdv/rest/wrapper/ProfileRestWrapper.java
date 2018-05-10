@@ -101,34 +101,39 @@ public class ProfileRestWrapper {
                 .map(it -> parseFeedItem(
                         response, it
                 ))
+                .filter(it -> it != null)
                 .toList();
     }
 
     private FeedItem parseFeedItem(GetUserByIdResponse response, GetUserByIdResponse.Post post) {
-        if (post.getMedia().isEmpty()) {
-            throw new RuntimeException("Media is empty for post " + 1L);
+        try {
+            if (post.getMedia().isEmpty()) {
+                throw new RuntimeException("Media is empty for post " + 1L);
+            }
+
+            List<String> urls = Stream
+                    .of(post.getMedia())
+                    .map(it -> it.getUrl().split("/")[3])
+                    .toList();
+
+            return FeedItem
+                    .builder()
+                    .id(post.getVdvid())
+                    .user(UserInfo
+                            .builder()
+                            .id(Long.parseLong(response.getVdvid()))
+                            .name(response.getName())
+                            .avatarUrl(response.getAvatar().isEmpty() ? null : response.getAvatar().get(0).getUrl().split("/")[3])
+                            .build()
+                    )
+                    .imagePaths(urls)
+                    .comments(new ArrayList<>())
+                    .likes(Collections.emptyList())
+                    .text("")
+                    .geoTag(GeoTag.builder().name("").lat(0.0).lon(0.0).build())
+                    .build();
+        } catch (Exception e) {
+            return null;
         }
-
-        List<String> urls = Stream
-                .of(post.getMedia())
-                .map(it -> it.getUrl().split("/")[3])
-                .toList();
-
-        return FeedItem
-                .builder()
-                .id(post.getVdvid())
-                .user(UserInfo
-                        .builder()
-                        .id(Long.parseLong(response.getVdvid()))
-                        .name(response.getName())
-                        .avatarUrl(response.getAvatar().isEmpty() ? null : response.getAvatar().get(0).getUrl().split("/")[3])
-                        .build()
-                )
-                .imagePaths(urls)
-                .comments(new ArrayList<>())
-                .likes(Collections.emptyList())
-                .text("")
-                .geoTag(GeoTag.builder().name("").lat(0.0).lon(0.0).build())
-                .build();
     }
 }

@@ -154,22 +154,24 @@ public class PostActivity extends BaseActivity {
                 .filter(it -> it != null)
                 .toList();
 
-        postRestWrapper.addPost(39L, descriptionView.getText().toString(), images, new RestListener<Void>() {
-            @Override
-            public void onStart() {
-                onPostStarted();
-            }
+        if (!images.isEmpty()) {
+            postRestWrapper.addPost(39L, descriptionView.getText().toString(), images, new RestListener<Void>() {
+                @Override
+                public void onStart() {
+                    onPostStarted();
+                }
 
-            @Override
-            public void onSuccess(Void data) {
-                onPostSendSuccess();
-            }
+                @Override
+                public void onSuccess(Void data) {
+                    onPostSendSuccess();
+                }
 
-            @Override
-            public void onFailure(Exception e) {
-                onPostSendSuccess();
-            }
-        });
+                @Override
+                public void onFailure(Exception e) {
+                    onPostSendSuccess();
+                }
+            });
+        }
     }
 
     @UiThread
