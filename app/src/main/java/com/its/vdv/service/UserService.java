@@ -10,7 +10,7 @@ import org.androidannotations.annotations.EBean;
 import lombok.Getter;
 import lombok.Setter;
 
-@EBean
+@EBean(scope = EBean.Scope.Singleton)
 public class UserService {
     @Bean
     UserImageDao userImageDao;

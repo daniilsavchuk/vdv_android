@@ -43,7 +43,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import static com.its.vdv.utils.BitmapUtils.centeredCrop;
+import static com.its.vdv.utils.BitmapUtils.iconToBytes;
 import static com.its.vdv.utils.BitmapUtils.scale;
+import static java.lang.Math.min;
 import static java.lang.String.format;
 
 @EActivity(R.layout.activity_profile)
@@ -211,7 +214,11 @@ public class ProfileActivity extends BaseActivity {
 
                 switch (avatartPopup.getIndex()) {
                     case 0:
-                        image = BitmapUtils.iconToBytes(bm);
+                        image = iconToBytes(centeredCrop(
+                                bm,
+                                min(bm.getWidth(), bm.getHeight()),
+                                min(bm.getWidth(), bm.getHeight())
+                        ));
                         break;
                 }
 
@@ -270,6 +277,8 @@ public class ProfileActivity extends BaseActivity {
         avatarProgressSpinnerView.clearAnimation();
         avatarProgressSpinnerView.setAnimation(loadingAnim);
 
+        userService.setUserImage(userService.getMyId(), null);
+
         redirect(ProfileActivity_.class, 0, 0, true, new HashMap<>());
     }
 
@@ -277,7 +286,7 @@ public class ProfileActivity extends BaseActivity {
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), url);
 
-            int minSize = Math.min(bitmap.getWidth(), bitmap.getHeight());
+            int minSize = min(bitmap.getWidth(), bitmap.getHeight());
 
             return scale(
                     bitmap,
