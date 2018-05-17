@@ -8,7 +8,9 @@ import com.its.vdv.data.Comment;
 import com.its.vdv.data.FeedItem;
 import com.its.vdv.data.GeoTag;
 import com.its.vdv.data.UserInfo;
+import com.its.vdv.rest.raw.LikeRest;
 import com.its.vdv.rest.raw.PostRest;
+import com.its.vdv.rest.request.AddLikeRequest;
 import com.its.vdv.rest.response.GetAllPostsResponse;
 import com.its.vdv.service.AuthService;
 
@@ -30,9 +32,32 @@ public class FeedRestWrapper {
 
     @RestService
     PostRest postRest;
+    @RestService
+    LikeRest likeRest;
 
     @Bean
     AuthService authService;
+
+    @Background
+    public void addLike(long id, RestListener<Void> listener) {
+        try {
+            listener.onStart();
+
+            likeRest.setHeader("authorization", "Bearer " + authService.getAuthToken().orElseThrow(RuntimeException::new));
+
+            AddLikeRequest addLikeRequest = new AddLikeRequest(); {
+                addLikeRequest.setVdvid(id);
+            }
+
+            likeRest.addLike(addLikeRequest);
+
+            listener.onSuccess(null);
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+
+            listener.onFailure(e);
+        }
+    }
 
     @Background
     public void getFeedItems(RestListener<List<FeedItem>> listener) {
@@ -73,7 +98,7 @@ public class FeedRestWrapper {
                     .user(parseUser(users.get(post.getUserid())))
                     .imagePaths(urls)
                     .comments(parseComments(post.getComment(), users))
-                    .likes(Collections.emptyList())
+                    .likes(parseLikes(post.getLike(), users))
                     .text(post.getDescription())
                     .geoTag(GeoTag
                             .builder()
@@ -86,6 +111,24 @@ public class FeedRestWrapper {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private List<UserInfo> parseLikes(List<GetAllPostsResponse.Post.Like> likes, Map<String, GetAllPostsResponse.User> users) {
+        return Stream
+                .of(likes)
+                .filter(it -> users.containsKey("" + it.getUserid()))
+                .map(it -> {
+                    GetAllPostsResponse.User user = users.get("" + it.getUserid());
+
+                    String url = user.getAvatar().get(0).getUrl().split("/")[3];
+
+                    return UserInfo.builder()
+                            .id(Long.parseLong(it.getUserid()))
+                            .avatarUrl(url)
+                            .name(user.getName())
+                            .build();
+                })
+                .toList();
     }
 
     private List<Comment> parseComments(List<GetAllPostsResponse.Post.Comment> comments, Map<String, GetAllPostsResponse.User> users) {
@@ -102,7 +145,7 @@ public class FeedRestWrapper {
                             .userInfo(UserInfo.builder()
                                     .id(it.getUserid())
                                     .avatarUrl(url)
-                                    .name(user.getVdvid())
+                                    .name(user.getName())
                                     .build()
                             )
                             .text(it.getText())

@@ -8,6 +8,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.annimon.stream.Objects;
+import com.annimon.stream.Stream;
 import com.its.vdv.BaseActivity;
 import com.its.vdv.CommentsActivity_;
 import com.its.vdv.ProfileActivity_;
@@ -15,6 +17,8 @@ import com.its.vdv.R;
 import com.its.vdv.data.Comment;
 import com.its.vdv.data.FeedItem;
 import com.its.vdv.data.GeoTag;
+import com.its.vdv.data.UserInfo;
+import com.its.vdv.rest.wrapper.FeedRestWrapper;
 import com.its.vdv.rest.wrapper.PostRestWrapper;
 import com.its.vdv.rest.wrapper.RestListener;
 import com.its.vdv.rest.wrapper.UserRestWrapper;
@@ -29,6 +33,7 @@ import org.androidannotations.annotations.ViewById;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @EViewGroup(R.layout.view_feed_item)
@@ -70,9 +75,13 @@ public class FeedItemView extends RelativeLayout {
     PostRestWrapper postRestWrapper;
     @Bean
     UserRestWrapper userRestWrapper;
+    @Bean
+    FeedRestWrapper feedRestWrapper;
 
     private FeedItem feedItem;
     private boolean commentsVisible = false;
+    private boolean alreadyLiked = false;
+    private boolean liked = false;
 
     public FeedItemView(Context context) {
         super(context);
@@ -92,6 +101,17 @@ public class FeedItemView extends RelativeLayout {
         ((BaseActivity) getContext()).redirect(CommentsActivity_.class, 0, 0, false, extras);
     }
 
+    @Click(R.id.like)
+    void onLike() {
+        if (!liked) {
+            feedRestWrapper.addLike(feedItem.getId(), new RestListener<>());
+
+            liked = !liked;
+
+            initLikes();
+        }
+    }
+
     public void bind(FeedItem feedItem) {
         this.feedItem = feedItem;
 
@@ -106,15 +126,14 @@ public class FeedItemView extends RelativeLayout {
                 () -> feedItem.getUser().getAvatarUrl() == null ? null : userRestWrapper.getUserImage(feedItem.getUser().getId(), feedItem.getUser().getAvatarUrl(), new RestListener<>())
         );
 
-        boolean hasLikes = !feedItem.getLikes().isEmpty();
+        alreadyLiked = Stream.of(feedItem.getLikes())
+                .filter(it -> Objects.equals(userService.getMyId(), it.getId()))
+                .findFirst()
+                .isPresent();
 
-        likesLabelEmptyView.setVisibility(hasLikes ? GONE : VISIBLE);
-        likesLabelNotEmptyView.setVisibility(hasLikes ? VISIBLE : GONE);
-        likesView.setVisibility(hasLikes ? VISIBLE : GONE);
+        liked = alreadyLiked;
 
-        if (hasLikes) {
-            likesView.setText(getLikes(feedItem));
-        }
+        initLikes();
 
         commentsListView.removeAllViews();
         for (Comment comment : feedItem.getComments()) {
@@ -130,6 +149,18 @@ public class FeedItemView extends RelativeLayout {
         seeMoreCommentsView.setText("Show more (" + feedItem.getComments().size() + ")");
 
         feedItemImagesView.bind(feedItem.getId(), feedItem.getImagePaths());
+    }
+
+    private void initLikes() {
+        boolean hasLikes = !feedItem.getLikes().isEmpty() || liked;
+
+        likesLabelEmptyView.setVisibility(hasLikes ? GONE : VISIBLE);
+        likesLabelNotEmptyView.setVisibility(hasLikes ? VISIBLE : GONE);
+        likesView.setVisibility(hasLikes ? VISIBLE : GONE);
+
+        if (hasLikes) {
+            likesView.setText(getLikes(feedItem));
+        }
     }
 
     @Click(R.id.header)
@@ -148,20 +179,34 @@ public class FeedItemView extends RelativeLayout {
     }
 
     private String getLikes(FeedItem feedItem) {
-        if (feedItem.getLikes().size() == 0) {
+        List<UserInfo> likes = liked ?
+                feedItem.getLikes() :
+                Stream.of(feedItem.getLikes()).filter(it -> !Objects.equals(it.getId(), userService.getMyId())).toList();
+
+        if (likes.size() == 0 && !liked) {
             throw new RuntimeException();
         } else {
             StringBuilder sb = new StringBuilder();
 
-            sb.append(feedItem.getLikes().get(0).getName());
+            if (!alreadyLiked && liked) {
+                sb.append("you");
 
-            for (int i = 1; i < MAX_LIKES_SHOWN && i < feedItem.getLikes().size(); i++) {
-                sb.append(", ");
-                sb.append(feedItem.getLikes().get(i).getName());
+                if (!feedItem.getLikes().isEmpty()) {
+                    sb.append(", ");
+                }
             }
 
-            if (feedItem.getLikes().size() > MAX_LIKES_SHOWN) {
-                sb.append(" and ").append(feedItem.getLikes().size() - 2).append(" more");
+            if (!feedItem.getLikes().isEmpty()) {
+                sb.append(feedItem.getLikes().get(0).getName());
+
+                for (int i = 1; i < MAX_LIKES_SHOWN && i < likes.size(); i++) {
+                    sb.append(", ");
+                    sb.append(likes.get(i).getName());
+                }
+
+                if (feedItem.getLikes().size() > MAX_LIKES_SHOWN) {
+                    sb.append(" and ").append(likes.size() - 2).append(" more");
+                }
             }
 
             return sb.toString();

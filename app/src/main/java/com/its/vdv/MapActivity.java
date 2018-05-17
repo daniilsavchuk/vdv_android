@@ -2,6 +2,7 @@ package com.its.vdv;
 
 import android.graphics.PorterDuff;
 
+import com.annimon.stream.Stream;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,9 +25,11 @@ import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @EActivity(R.layout.activity_map)
 public class MapActivity extends BaseActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
@@ -86,7 +89,17 @@ public class MapActivity extends BaseActivity implements OnMapReadyCallback, Goo
     
     @Override
     public boolean onMarkerClick(Marker marker) {
-        redirect(CourtActivity_.class, 0, 0, false, new HashMap<>());
+        Map<String, Serializable> extras = new HashMap<>();
+
+        extras.put("courtId", Stream.of(courts)
+                .filter(it -> it.getName().equals(marker.getTitle()))
+                .findFirst()
+                .orElseThrow(RuntimeException::new)
+                .getId()
+        );
+
+        redirect(CourtActivity_.class, 0, 0, false, extras);
+
         return true;
     }
     

@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.crashlytics.android.Crashlytics;
 import com.its.vdv.BaseActivity;
 import com.its.vdv.R;
 
@@ -71,9 +72,13 @@ public class PostPopup extends RelativeLayout {
 
     @Click(R.id.choose_from_gallery)
     void onChooseFromGallery() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        try {
+            Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
-        ((BaseActivity) getContext()).startActivityForResult(galleryIntent, CHOOSE_FROM_GALLERY_ACTION_ID);
+            ((BaseActivity) getContext()).startActivityForResult(galleryIntent, CHOOSE_FROM_GALLERY_ACTION_ID);
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+        }
     }
 
     private File createImageFile() throws IOException {

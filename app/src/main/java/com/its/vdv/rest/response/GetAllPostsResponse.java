@@ -34,12 +34,20 @@ public class GetAllPostsResponse {
             private String text;
         }
 
+        @Getter
+        @Setter
+        public static class Like {
+            private String vdvid;
+            private String userid;
+        }
+
         private long vdvid;
         private String userid;
         private String description;
         private List<Media> media;
         private List<Comment> comment;
         private List<Location> location;
+        private List<Like> like;
     }
 
     @Getter

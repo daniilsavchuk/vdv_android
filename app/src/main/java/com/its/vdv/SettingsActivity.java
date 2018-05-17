@@ -14,6 +14,6 @@ public class SettingsActivity extends BaseActivity {
 
     @Click(R.id.create_court)
     void createCourt() {
-        redirect(CreateCourtActivity_.class, 0, 0, false, new HashMap<>());
+        // redirect(CreateCourtActivity_.class, 0, 0, false, new HashMap<>());
     }
 }

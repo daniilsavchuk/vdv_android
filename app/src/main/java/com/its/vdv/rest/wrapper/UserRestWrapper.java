@@ -50,6 +50,23 @@ public class UserRestWrapper {
         }
     }
 
+    @Background
+    public void getMyId(RestListener<Long> listener) {
+        try {
+            listener.onStart();
+
+            userRest.setHeader("authorization", "Bearer " + authService.getAuthToken().orElseThrow(RuntimeException::new));
+
+            long yourId = Long.parseLong(userRest.getYourInfo().get(0).getVdvid());
+
+            listener.onSuccess(yourId);
+        } catch (Exception e) {
+            /* Do nothing */
+
+            listener.onSuccess(null);
+        }
+    }
+
     public byte [] getUserImage(long id, String path, RestListener<byte []> listener) {
         try {
             listener.onStart();

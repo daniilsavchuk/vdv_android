@@ -1,10 +1,17 @@
 package com.its.vdv.service;
 
+import android.graphics.Bitmap;
+
 import com.annimon.stream.Optional;
 import com.its.vdv.dao.PostImageDao;
+import com.its.vdv.utils.BitmapUtils;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+
+import static com.its.vdv.utils.BitmapUtils.iconFromBytes;
+import static com.its.vdv.utils.BitmapUtils.iconToBytes;
+import static com.its.vdv.utils.BitmapUtils.scale;
 
 @EBean
 public class PostService {
@@ -28,6 +35,15 @@ public class PostService {
             daoId.setImageIndex(imageIndex);
         }
 
-        postImageDao.addIcon(daoId, image);
+        postImageDao.addIcon(daoId, scalePostImage(image));
+    }
+
+    private byte [] scalePostImage(byte [] imageBytes) {
+        Bitmap image = iconFromBytes(imageBytes);
+
+        int newWidth = image.getWidth() * 500 / image.getHeight();
+        int newHeight = 500;
+
+        return iconToBytes(scale(image, newWidth, newHeight));
     }
 }

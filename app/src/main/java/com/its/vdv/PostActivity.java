@@ -1,10 +1,15 @@
 package com.its.vdv;
 
 import android.Manifest;
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
@@ -12,11 +17,14 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.annimon.stream.Stream;
+import com.crashlytics.android.Crashlytics;
 import com.its.vdv.rest.wrapper.PostRestWrapper;
 import com.its.vdv.rest.wrapper.RestListener;
 import com.its.vdv.utils.BitmapUtils;
+import com.its.vdv.utils.GalleryUtils;
 import com.its.vdv.views.NavigationFooterView;
 import com.its.vdv.views.PostPopup;
 
@@ -39,6 +47,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import static com.its.vdv.utils.BitmapUtils.scale;
+import static java.lang.String.format;
 
 @EActivity(R.layout.activity_post)
 public class PostActivity extends BaseActivity {
@@ -120,30 +129,40 @@ public class PostActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-
         if (resultCode == RESULT_OK) {
-            Uri url = requestCode == TAKE_PHOTO_ACTION_ID ?
-                    postPopup.getPhotoUri() : Uri.parse("content://media/" + data.getData().getPath());
+            try {
+                Uri url = requestCode == TAKE_PHOTO_ACTION_ID ?
+                        postPopup.getPhotoUri() : Uri.fromFile(new File(GalleryUtils.getPath(this, data.getData())));
 
-            Bitmap bm = getInitialBitmap(url);
+                Bitmap bm = getInitialBitmap(url);
 
-            switch (postPopup.getIndex()) {
-                case 1:
-                    image1 = BitmapUtils.iconToBytes(bm);
-                    break;
-                case 2:
-                    image2 = BitmapUtils.iconToBytes(bm);
-                    break;
-                case 3:
-                    image3 = BitmapUtils.iconToBytes(bm);
-                    break;
-                case 4:
-                    image4 = BitmapUtils.iconToBytes(bm);
-                    break;
+                switch (postPopup.getIndex()) {
+                    case 1:
+                        image1 = BitmapUtils.iconToBytes(bm);
+                        break;
+                    case 2:
+                        image2 = BitmapUtils.iconToBytes(bm);
+                        break;
+                    case 3:
+                        image3 = BitmapUtils.iconToBytes(bm);
+                        break;
+                    case 4:
+                        image4 = BitmapUtils.iconToBytes(bm);
+                        break;
+                }
+
+                postPopup.getImageView().setImageBitmap(bm);
+                postPopup.setVisibility(View.GONE);
+            } catch (Exception e) {
+                Crashlytics.logException(e);
             }
-
-            postPopup.getImageView().setImageBitmap(bm);
-            postPopup.setVisibility(View.GONE);
+        } else {
+            Crashlytics.log(format(
+                    Locale.ENGLISH,
+                    "Request code: %d, Result code: %d",
+                    requestCode,
+                    resultCode
+            ));
         }
     }
 
