@@ -1,12 +1,19 @@
 package com.its.vdv;
 
+import android.Manifest;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.support.v4.app.ActivityCompat;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.animation.Animation;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.annimon.stream.Stream;
+import com.crashlytics.android.Crashlytics;
 import com.its.vdv.adapter.FeedListAdapter;
 import com.its.vdv.data.FeedItem;
 import com.its.vdv.data.ProfileInfo;
@@ -15,8 +22,11 @@ import com.its.vdv.rest.raw.ImageRest;
 import com.its.vdv.rest.wrapper.ProfileRestWrapper;
 import com.its.vdv.rest.wrapper.RestListener;
 import com.its.vdv.service.UserService;
+import com.its.vdv.utils.BitmapUtils;
+import com.its.vdv.utils.GalleryUtils;
 import com.its.vdv.views.LoadableImageView;
 import com.its.vdv.views.NavigationFooterView;
+import com.its.vdv.views.PostPopup;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
@@ -28,11 +38,19 @@ import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.AnimationRes;
 import org.androidannotations.rest.spring.annotations.RestService;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+
+import static com.its.vdv.utils.BitmapUtils.scale;
+import static java.lang.String.format;
 
 @EActivity(R.layout.activity_profile)
 public class ProfileActivity extends BaseActivity {
+    private static final int TAKE_PHOTO_ACTION_ID = 0;
+    private static final int CHOOSE_FROM_GALLERY_ACTION_ID = 1;
+
     @ViewById(R.id.avatar)
     LoadableImageView avatarView;
     @ViewById(R.id.name)
@@ -55,6 +73,11 @@ public class ProfileActivity extends BaseActivity {
     @ViewById(R.id.profile_loading)
     View profileLoadingView;
 
+    @ViewById(R.id.avatar_progress)
+    View avatarProgressView;
+    @ViewById(R.id.avatar_progress_spinner)
+    View avatarProgressSpinnerView;
+
     @Bean
     FeedListAdapter feedListAdapter;
 
@@ -75,6 +98,13 @@ public class ProfileActivity extends BaseActivity {
     @AnimationRes(R.anim.spinner)
     Animation loadingAnim;
 
+    @ViewById(R.id.avatar_popup)
+    PostPopup avatartPopup;
+
+    User user;
+
+    private byte [] image = null;
+
     @AfterViews
     public void init() {
         profileView.setVisibility(View.INVISIBLE);
@@ -89,10 +119,21 @@ public class ProfileActivity extends BaseActivity {
         });
 
         navigationFooterView.setPage(NavigationFooterView.Page.PROFILE);
+
+        ActivityCompat.requestPermissions(
+                this,
+                new String[] {
+                        android.Manifest.permission.CAMERA,
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                },
+                1
+        );
     }
 
     @UiThread
     void fillProfile(User user, List<FeedItem> feedItems) {
+        this.user = user;
         profileView.setVisibility(View.VISIBLE);
 
         profileLoadingView.clearAnimation();
@@ -147,11 +188,104 @@ public class ProfileActivity extends BaseActivity {
 
     @Click(R.id.avatar)
     void onAvatarClick() {
-        // ToDO
+        if (this.user.getIs_me()) {
+            avatartPopup.bindImage(0, avatarView);
+        }
     }
 
     @Click(R.id.settings)
     void onSettingsClick() {
         redirect(SettingsActivity_.class, 0, 0, false, new HashMap<>());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            try {
+                Uri url = requestCode == TAKE_PHOTO_ACTION_ID ?
+                        avatartPopup.getPhotoUri() : Uri.fromFile(new File(GalleryUtils.getPath(this, data.getData())));
+
+                Bitmap bm = getInitialBitmap(url);
+
+                switch (avatartPopup.getIndex()) {
+                    case 0:
+                        image = BitmapUtils.iconToBytes(bm);
+                        break;
+                }
+
+                //avatartPopup.getImageView().setImageBitmap(bm);
+                avatartPopup.setVisibility(View.GONE);
+                onPostClick();
+            } catch (Exception e) {
+                Crashlytics.logException(e);
+            }
+        } else {
+            Crashlytics.log(format(
+                    Locale.ENGLISH,
+                    "Request code: %d, Result code: %d",
+                    requestCode,
+                    resultCode
+            ));
+        }
+    }
+
+    void onPostClick() {
+        List<byte []> images = Stream
+                .of(image)
+                .filter(it -> it != null)
+                .toList();
+
+        if (!images.isEmpty()) {
+            profileRestWrapper.updateAvatar(this.user.getId(), images, new RestListener<Void>() {
+                @Override
+                public void onStart() {
+                    onAvatarUploadStarted();
+                }
+
+                @Override
+                public void onSuccess(Void data) {
+                    onAvatarUploadSendSuccess();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    onAvatarUploadSendSuccess();
+                }
+            });
+        }
+    }
+
+    @UiThread
+    void onAvatarUploadStarted() {
+        avatarProgressView.setVisibility(View.VISIBLE);
+        avatarProgressSpinnerView.setAnimation(loadingAnim);
+    }
+
+    @UiThread
+    void onAvatarUploadSendSuccess() {
+        avatarProgressView.setVisibility(View.INVISIBLE);
+
+        avatarProgressSpinnerView.clearAnimation();
+        avatarProgressSpinnerView.setAnimation(loadingAnim);
+
+        redirect(ProfileActivity_.class, 0, 0, true, new HashMap<>());
+    }
+
+    private Bitmap getInitialBitmap(Uri url) {
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), url);
+
+            int minSize = Math.min(bitmap.getWidth(), bitmap.getHeight());
+
+            return scale(
+                    bitmap,
+                    bitmap.getWidth() * 800 / minSize,
+                    bitmap.getHeight() * 800 / minSize
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

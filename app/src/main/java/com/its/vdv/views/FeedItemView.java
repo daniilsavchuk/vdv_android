@@ -104,7 +104,7 @@ public class FeedItemView extends RelativeLayout {
     @Click(R.id.like)
     void onLike() {
         if (!liked) {
-            feedRestWrapper.addLike(feedItem.getId(), new RestListener<>());
+            feedRestWrapper.addLike(feedItem.getId(), 1, new RestListener<>());
 
             liked = !liked;
 

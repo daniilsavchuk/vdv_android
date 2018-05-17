@@ -1,5 +1,6 @@
 package com.its.vdv.rest.wrapper;
 
+import android.util.Base64;
 import android.util.Log;
 
 import com.annimon.stream.Stream;
@@ -11,6 +12,7 @@ import com.its.vdv.data.User;
 import com.its.vdv.data.UserInfo;
 import com.its.vdv.rest.raw.FollowRest;
 import com.its.vdv.rest.raw.UserRest;
+import com.its.vdv.rest.request.UpdateUserRequest;
 import com.its.vdv.rest.response.GetUserByIdResponse;
 import com.its.vdv.service.AuthService;
 
@@ -35,6 +37,32 @@ public class ProfileRestWrapper {
 
     @Bean
     AuthService authService;
+
+    @Background
+    public void updateAvatar(long userId, List<byte []> images, RestListener<Void> listener) {
+        try {
+            listener.onStart();
+
+            UpdateUserRequest updateUserRequest = new UpdateUserRequest();
+            {
+                updateUserRequest.setId(userId);
+                updateUserRequest.setProp(new UpdateUserRequest.Prop());
+                {
+                    updateUserRequest.getProp().setAvatar(Base64.encodeToString(images.get(0), Base64.DEFAULT));
+                }
+            }
+
+            userRest.setHeader("authorization", "Bearer " + authService.getAuthToken().orElseThrow(RuntimeException::new));
+
+            userRest.updateUser(updateUserRequest);
+
+            listener.onSuccess(null);
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+
+            listener.onFailure(e);
+        }
+    }
 
     @Background
     public void getProfileByUserId(Long userId, RestListener<ProfileInfo> listener) {

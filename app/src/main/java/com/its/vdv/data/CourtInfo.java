@@ -2,11 +2,13 @@ package com.its.vdv.data;
 
 import java.util.List;
 
+import lombok.Setter;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Builder;
 
 @Builder
+@Setter
 @Getter
 public class CourtInfo {
     @Builder
@@ -33,4 +35,8 @@ public class CourtInfo {
     @NonNull private Boolean mine;
     @NonNull private Boolean followed;
     @NonNull private Long followersAmount;
+    @NonNull private Boolean liked;
+    @NonNull private Double myRate;
+    @NonNull private Long rateCount;
+    @NonNull private Double rateAvg;
 }

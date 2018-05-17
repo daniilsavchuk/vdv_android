@@ -68,6 +68,10 @@ public class CourtsRestWrapper {
                     .mine(response.getIs_mine())
                     .followed(response.getFollowed())
                     .followersAmount(response.getFollowers_amount())
+                    .liked(response.getLiked())
+                    .myRate(response.getMy_rate())
+                    .rateCount(response.getRate_count())
+                    .rateAvg(response.getRate_avg())
                     .build();
 
             listener.onSuccess(courtInfo);

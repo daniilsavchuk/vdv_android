@@ -2,6 +2,7 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -35,14 +36,40 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <com.its.vdv.views.LoadableImageView_
-                        android:id="@+id/avatar"
+                    <RelativeLayout
                         android:layout_width="80dp"
                         android:layout_height="80dp"
-                        app:riv_corner_radius="40dp"
-                        android:layout_marginRight="10dp"
                         android:layout_marginEnd="10dp"
-                        android:src="@color/gray_1"/>
+                        android:layout_marginRight="10dp"
+                        android:gravity="center_vertical">
+
+                        <com.its.vdv.views.LoadableImageView_
+                            android:id="@+id/avatar"
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:src="@color/gray_1"
+                            app:riv_corner_radius="40dp" />
+
+                        <RelativeLayout
+                            android:id="@+id/avatar_progress"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:layout_marginTop="20dp"
+                            android:gravity="center_vertical"
+                            android:textColor="@color/white"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:id="@+id/avatar_progress_spinner"
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:layout_centerInParent="true"
+                                android:adjustViewBounds="true"
+                                android:src="@drawable/spinner"
+                                android:tint="@color/vdv" />
+
+                        </RelativeLayout>
+                    </RelativeLayout>
 
                     <LinearLayout
                         android:orientation="vertical"
@@ -154,7 +181,13 @@
             android:layout_height="30dp"
             android:layout_centerInParent="true"
             android:src="@drawable/spinner"
-            android:tint="@color/vdv"/>
+            android:tint="@color/vdv" />
+
+        <com.its.vdv.views.PostPopup_
+            android:id="@+id/avatar_popup"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
     </RelativeLayout>
 

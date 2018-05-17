@@ -39,7 +39,7 @@ public class FeedRestWrapper {
     AuthService authService;
 
     @Background
-    public void addLike(long id, RestListener<Void> listener) {
+    public void addLike(long id, long weight, RestListener<Void> listener) {
         try {
             listener.onStart();
 
@@ -47,6 +47,7 @@ public class FeedRestWrapper {
 
             AddLikeRequest addLikeRequest = new AddLikeRequest(); {
                 addLikeRequest.setVdvid(id);
+                addLikeRequest.setWeight(weight);
             }
 
             likeRest.addLike(addLikeRequest);

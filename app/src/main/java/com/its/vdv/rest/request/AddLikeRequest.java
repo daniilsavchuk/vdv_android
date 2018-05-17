@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class AddLikeRequest {
     private long vdvid;
-    private int weight = 1;
+    private long weight = 1;
 }

@@ -1,5 +1,6 @@
 package com.its.vdv;
 
+import android.graphics.PorterDuff;
 import android.view.View;
 import android.view.animation.Animation;
 import android.widget.ImageView;
@@ -11,6 +12,7 @@ import com.its.vdv.data.CourtInfo;
 import com.its.vdv.data.FeedItem;
 import com.its.vdv.rest.raw.ImageRest;
 import com.its.vdv.rest.wrapper.CourtsRestWrapper;
+import com.its.vdv.rest.wrapper.FeedRestWrapper;
 import com.its.vdv.rest.wrapper.ProfileRestWrapper;
 import com.its.vdv.rest.wrapper.RestListener;
 import com.its.vdv.service.UserService;
@@ -75,6 +77,19 @@ public class CourtActivity extends BaseActivity {
     @ViewById(R.id.equipment_photo_9)
     LoadableImageView equipmentPhotoView9;
 
+    @ViewById(R.id.rate0)
+    ImageView rate0;
+    @ViewById(R.id.rate1)
+    ImageView rate1;
+    @ViewById(R.id.rate2)
+    ImageView rate2;
+    @ViewById(R.id.rate3)
+    ImageView rate3;
+    @ViewById(R.id.rate4)
+    ImageView rate4;
+    @ViewById(R.id.rate_by)
+    TextView rateBy;
+
     @ViewById(R.id.geo_tag)
     TextView geoTagView;
 
@@ -88,6 +103,8 @@ public class CourtActivity extends BaseActivity {
     ProfileRestWrapper profileRestWrapper;
     @Bean
     CourtsRestWrapper courtsRestWrapper;
+    @Bean
+    FeedRestWrapper feedRestWrapper;
 
     @RestService
     ImageRest imageRest;
@@ -163,6 +180,8 @@ public class CourtActivity extends BaseActivity {
 
         updateFollowingButtonState(courtInfo);
 
+        updateRateState(courtInfo);
+
         //followersAmount.setText(getResources().getString(R.string.profile_users_amount, user.getFollowers_amount()));
         //followingAmount.setText(getResources().getString(R.string.profile_users_amount, user.getFollowing_amount()));
     }
@@ -188,6 +207,104 @@ public class CourtActivity extends BaseActivity {
         followingAmount = followed ? followingAmount + 1 : followingAmount - 1;
         followersAmountView.setText(getResources().getString(R.string.profile_users_amount, followingAmount));
         updateFollowingButtonState(courtInfo);
+    }
+
+    void updateRatePanel(long weight) {
+        double sum = 0.0;
+        long rateCount = this.courtInfo.getRateCount();
+        if (rateCount > 0) {
+            sum = this.courtInfo.getRateAvg() / rateCount;
+        }
+
+        sum += weight;
+
+        if (!this.courtInfo.getLiked()) {
+            this.courtInfo.setRateCount(rateCount + 1);
+            this.courtInfo.setLiked(true);
+        } else {
+            sum -= this.courtInfo.getMyRate();
+        }
+        this.courtInfo.setMyRate((double)weight);
+        this.courtInfo.setRateAvg(sum / this.courtInfo.getRateCount());
+
+        updateRateState(this.courtInfo);
+    }
+
+    @Click(R.id.rate0)
+    void onRate0Click() {
+        feedRestWrapper.addLike(courtId, 1, new RestListener<>());
+        updateRatePanel(1);
+    }
+
+    @Click(R.id.rate1)
+    void onRate1Click() {
+        feedRestWrapper.addLike(courtId, 2, new RestListener<>());
+        updateRatePanel(2);
+    }
+
+    @Click(R.id.rate2)
+    void onRate2Click() {
+        feedRestWrapper.addLike(courtId, 3, new RestListener<>());
+        updateRatePanel(3);
+    }
+
+    @Click(R.id.rate3)
+    void onRate3Click() {
+        feedRestWrapper.addLike(courtId, 4, new RestListener<>());
+        updateRatePanel(4);
+    }
+
+    @Click(R.id.rate4)
+    void onRate4Click() {
+        feedRestWrapper.addLike(courtId, 5, new RestListener<>());
+        updateRatePanel(5);
+    }
+
+    void updateRateState(CourtInfo courtInfo) {
+        double rate_average = courtInfo.getRateAvg();
+        long rate_count = courtInfo.getRateCount();
+        rateBy.setText("rate by: " + rate_count);
+
+        rate0.setColorFilter(null);
+        rate1.setColorFilter(null);
+        rate2.setColorFilter(null);
+        rate3.setColorFilter(null);
+        rate4.setColorFilter(null);
+
+        if (1 <= rate_average) {
+            rate0.setColorFilter(
+                    getResources().getColor(R.color.vdv),
+                    PorterDuff.Mode.SRC_IN
+            );
+        }
+
+        if (2 <= rate_average) {
+            rate1.setColorFilter(
+                    getResources().getColor(R.color.vdv),
+                    PorterDuff.Mode.SRC_IN
+            );
+        }
+
+        if (3 <= rate_average) {
+            rate2.setColorFilter(
+                    getResources().getColor(R.color.vdv),
+                    PorterDuff.Mode.SRC_IN
+            );
+        }
+
+        if (4 <= rate_average) {
+            rate3.setColorFilter(
+                    getResources().getColor(R.color.vdv),
+                    PorterDuff.Mode.SRC_IN
+            );
+        }
+
+        if (5 <= rate_average) {
+            rate4.setColorFilter(
+                    getResources().getColor(R.color.vdv),
+                    PorterDuff.Mode.SRC_IN
+            );
+        }
     }
 
     void updateFollowingButtonState(CourtInfo courtInfo) {

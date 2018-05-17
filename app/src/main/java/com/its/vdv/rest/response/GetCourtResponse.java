@@ -41,4 +41,8 @@ public class GetCourtResponse {
     private Boolean is_mine;
     private Boolean followed;
     private Long followers_amount;
+    private Boolean liked;
+    private Double my_rate;
+    private Long rate_count;
+    private Double rate_avg;
 }
